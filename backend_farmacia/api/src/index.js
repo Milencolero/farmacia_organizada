@@ -45,9 +45,9 @@ async function bootstrap() {
     iniciarJobAlertas();
 
     // Levantar servidor
-    app.listen(config.port, () =>
-      console.log(`Servidor escuchando en http://localhost:${config.port}`)
-    );
+  const PORT = process.env.PORT || config.port || 3000;
+app.listen(PORT, () => console.log(`Servidor escuchando en el puerto ${PORT}`));
+
   } catch (err) {
     console.error("Error en arranque del servidor:", err);
     process.exit(1);
