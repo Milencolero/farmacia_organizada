@@ -1,0 +1,127 @@
+/* ============================= */
+/* LAYOUT - Header y Navegación  */
+/* ============================= */
+
+/* ===== Header principal ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--background);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header__icon {
+  width: 24px;
+  height: 24px;
+  color: var(--foreground);
+}
+
+.header__title {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--foreground);
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header__user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.875rem;
+}
+
+.header__email {
+  color: #555;
+  font-weight: var(--font-weight-medium);
+}
+
+.header__role {
+  color: #888;
+}
+
+/* ===== Botón logout (header) ===== */
+.header__logout {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+  background-color: transparent;
+  color: var(--foreground);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.header__logout:hover {
+  background-color: #f3f3f5;
+  color: var(--foreground);
+}
+
+.header__logout-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Contenido y navegación ===== */
+.content-container {
+  padding: 2rem;
+}
+
+.main-nav {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: var(--font-weight-medium);
+  color: #888;
+  text-decoration: none;
+  padding: 1rem 1.5rem;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.2s ease;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+
+.nav-link:hover {
+  color: #555;
+}
+
+.router-link-exact-active {
+  color: var(--foreground);
+  font-weight: var(--font-weight-medium);
+  background-color: var(--background);
+  border-color: #e0e0e0;
+  border-bottom: 3px solid #505050ff;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-icon--green {
+  color: #16a34a;
+}

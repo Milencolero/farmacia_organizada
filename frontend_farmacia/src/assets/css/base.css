@@ -1,0 +1,174 @@
+/* ============================= */
+/* BASE STYLES - FARMACIA ORGANIZADA   */
+/* ============================= */
+
+/* Variables de color y tipografía */
+:root {
+  --primary: #030213;               /* Botones principales */
+  --primary-foreground: #ffffff;    /* Texto botones */
+  --background: #ffffff;            /* Fondo general */
+  --foreground: #333333;            /* Texto general */
+  --muted: #f3f3f5;                 /* Fondo inputs */
+  --muted-foreground: #717182;      /* Texto secundario */
+  --destructive: #d4183d;           /* Mensajes de error / stock bajo */
+  --radius: 10px;                   /* Bordes redondeados */
+  --input-padding: 0.6rem 0.8rem;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --font-family: 'Inter', sans-serif;
+  --font-size-base: 14px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+}
+
+/* ===== Reset y body ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+}
+
+/* ===== Tarjetas / paneles ===== */
+.card, .bg-card, .login-card {
+  background-color: var(--background);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+
+
+
+/* ===== Inputs / formularios ===== */
+input, select, textarea {
+  width: 100%;
+  padding: var(--input-padding);
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+  background-color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-normal);
+}
+
+label {
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+/* Focus input */
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--primary);
+}
+
+/* ===== Mensajes de error ===== */
+.error-text, .cantidad-bajo-stock {
+  color: var(--destructive);
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+
+/* Contenedor de tablas */
+.table-wrapper {
+  overflow-x: auto;
+  background: var(--background);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+
+/* Tablas generales */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+thead th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+tbody td {
+  padding: 0.75rem 1rem;
+  color: var(--foreground);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+tbody tr:hover {
+  background-color: #fafafa;
+}
+
+/* Mensajes de tablas vacías o info */
+.message.info, .tabla-inventario__empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* Badges de estado dentro de tablas */
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* Badges de estado con colores */
+.bg-green-100 {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.bg-red-100 {
+  background-color: #f8d7da;
+  color: var(--destructive); /* #d4183d */
+}
+
+.bg-orange-100 {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+
+/* ===== Listas dentro de celdas ===== */
+td ul {
+  padding-left: 1rem;
+  list-style-type: disc;
+}
+
+
+/* ===== Otros ===== */
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Formularios generales */
+.form-group { margin-bottom: 1rem; }
+
+h1.page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 1.5rem 0; /* margen arriba y abajo consistente */
+}
