@@ -9,6 +9,7 @@ import inventarioRoutes from "./routes/inventario.js";
 import { iniciarJobAlertas } from "./jobs/alertasVencimiento.js";
 import solicitudesRoutes from "./routes/solicitudes.js";
 import movimientosRoutes from "./routes/movimientos.js";
+import usuariosRoutes from "./routes/usuarios.js";
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1", inventarioRoutes);
 app.use("/api/v1/solicitudes", solicitudesRoutes);
 app.use("/api/v1/movimientos", movimientosRoutes);
+app.use("/api/v1/usuarios", usuariosRoutes);
 
 /* ============================= */
 /* Función de arranque del server*/
