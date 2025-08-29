@@ -6,6 +6,15 @@
     <!-- Título de la página -->
     <h1 class="page-title">Movimientos de Stock</h1>
 
+
+ <!-- Botón para exportar -->
+    <div class="actions-header">
+      <button @click="descargarPDF" class="btn">
+        Descargar PDF
+      </button>
+    </div>
+
+
     <!-- Estado: cargando -->
     <div v-if="loading" class="message info">
       Cargando historial...
@@ -17,7 +26,7 @@
     </div>
 
     <!-- Tabla de resultados -->
-    <div v-else class="table-wrapper">
+    <div v-else class="table-wrapper" ref="contenidoPDF">
       <table class="table">
         <thead>
           <tr>
@@ -55,11 +64,13 @@
 import { ref, onMounted } from "vue";
 import { listarMovimientosAPI } from "@/services/movimientosService";
 import DashboardHeader from "@/components/DashboardHeader.vue";
+import html2pdf from "html2pdf.js";
 
 // Estado local
 const movimientos = ref([]); // Historial de movimientos
 const loading = ref(true);   // Indicador de carga
 
+const contenidoPDF = ref(null);
 /**
  * Obtiene los movimientos de stock desde la API.
  * Incluye validación defensiva en caso de error o formato inesperado.
@@ -89,6 +100,22 @@ const formatDate = (dateString) =>
       })
     : "Fecha no disponible";
 
+// Generar y descargar el PDF
+const descargarPDF = () => {
+  if (!contenidoPDF.value) return;
+
+  const opciones = {
+    margin: 0.5,
+    filename: "movimientos_stock.pdf",
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "in", format: "a4", orientation: "landscape" }
+  };
+
+  html2pdf().set(opciones).from(contenidoPDF.value).save();
+};
+
+
 // Ejecutar carga inicial al montar el componente
 onMounted(fetchMovimientos);
 
@@ -99,6 +126,7 @@ onMounted(fetchMovimientos);
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1.5rem;
+  padding-right: 1rem
 }
 
 .form-group {

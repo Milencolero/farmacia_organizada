@@ -42,6 +42,11 @@
             <td>{{ proveedor.email || "N/A" }}</td>
             <td>{{ proveedor.direccion || "N/A" }}</td>
             <td>{{ formatDate(proveedor.createdAt) }}</td>
+          <td>
+      <button class="btn btn-secondary btn-sm" @click="abrirModalEditar(proveedor)">
+        Editar
+      </button>
+    </td>
           </tr>
         </tbody>
       </table>
@@ -103,12 +108,12 @@
 /**
  * Gestión de Proveedores
  * - Lista proveedores desde la API
- * - Permite agregar nuevos proveedores vía modal
+ * - Permite agregar/editar proveedores vía modal
  * - Maneja estados de carga, vacío y errores
  */
 
 import { ref, onMounted } from "vue";
-import { listarProveedores, crearProveedor } from "@/services/proveedoresService";
+import { listarProveedores, crearProveedor, actualizarProveedor} from "@/services/proveedoresService";
 import Modal from "@/components/Modal.vue";
 import DashboardHeader from "@/components/DashboardHeader.vue";
 
@@ -116,6 +121,10 @@ const proveedores = ref([]); // Lista de proveedores
 const loading = ref(true);   // Estado de carga
 const showModal = ref(false); // Control de modal
 const isSaving = ref(false);  // Estado de guardado
+const isEditing = ref(false);        // Indica si estamos editando
+const proveedorSeleccionado = ref(null); // Guarda el proveedor a editar
+
+
 
 // Modelo para formulario
 const nuevoProveedor = ref({
@@ -151,10 +160,7 @@ const cargarProveedores = async () => {
 
 //Manejo del modal
 const abrirModalCrear = () => (showModal.value = true);
-const cerrarModal = () => {
-  showModal.value = false;
-  resetFormulario();
-};
+
 const resetFormulario = () => {
   nuevoProveedor.value = { nombre: "", telefono: "", email: "", direccion: "" };
 };
@@ -167,8 +173,15 @@ const guardarProveedor = async () => {
   }
 
   isSaving.value = true;
-  try {
-    await crearProveedor(nuevoProveedor.value);
+   try {
+    if (isEditing.value && proveedorSeleccionado.value?._id) {
+      // Actualizar proveedor existente
+      await actualizarProveedor(proveedorSeleccionado.value._id, nuevoProveedor.value);
+    } else {
+      // Crear nuevo proveedor
+      await crearProveedor(nuevoProveedor.value);
+    }
+
     await cargarProveedores();
     cerrarModal();
   } catch (error) {
@@ -178,6 +191,26 @@ const guardarProveedor = async () => {
     isSaving.value = false;
   }
 };
+
+const abrirModalEditar = (proveedor) => {
+  isEditing.value = true;
+  proveedorSeleccionado.value = { ...proveedor }; // Clonamos para no modificar directamente
+  nuevoProveedor.value = { 
+    nombre: proveedor.nombre,
+    telefono: proveedor.telefono || "",
+    email: proveedor.email || "",
+    direccion: proveedor.direccion || ""
+  };
+  showModal.value = true;
+};
+
+const cerrarModal = () => {
+  showModal.value = false;
+  resetFormulario();
+  isEditing.value = false;
+  proveedorSeleccionado.value = null;
+};
+
 
 // Cargar proveedores al montar componente
 onMounted(cargarProveedores);
@@ -189,6 +222,7 @@ onMounted(cargarProveedores);
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1.5rem;
+  padding-right: 1rem
 }
 
 .modal-actions {

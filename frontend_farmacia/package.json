@@ -11,6 +11,7 @@
   "dependencies": {
     "@iconify/vue": "^5.0.0",
     "axios": "^1.11.0",
+    "html2pdf.js": "^0.11.2",
     "lucide-vue-next": "^0.539.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.18",

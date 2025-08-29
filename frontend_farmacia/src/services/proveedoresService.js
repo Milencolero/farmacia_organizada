@@ -22,3 +22,8 @@ export async function crearProveedor(data) {
   const res = await api.post("/proveedores", data);
   return res.data;
 }
+
+export const actualizarProveedor = async (id, data) => {
+  const response = await api.put(`/proveedores/${id}`, data);
+  return response.data;
+};

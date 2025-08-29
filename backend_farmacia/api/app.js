@@ -1,5 +1,5 @@
 // =============================
-// app.js - Configuración principal de Express
+//  Configuración principal de Express
 // =============================
 
 // Cargar variables de entorno ANTES de importar cualquier otro módulo
@@ -17,7 +17,7 @@ import morgan from "morgan";
 import authRoutes from "./src/routes/auth.js";
 import inventarioRoutes from "./src/routes/inventario.js";
 import solicitudesRoutes from "./src/routes/solicitudes.js";
-
+import usuariosRoutes from "./routes/usuarios.js";
 const app = express();
 
 // =============================
@@ -40,7 +40,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/inventario", inventarioRoutes);
 app.use("/api/v1/solicitudes", solicitudesRoutes);
-
+app.use("/api/v1/usuarios", usuariosRoutes);
 // =============================
 // Exportar app para server.js o tests
 // =============================

@@ -81,4 +81,19 @@ router.post("/proveedores", requireRole("ADMIN"), proveedoresController.crearPro
  */
 router.get("/proveedores", proveedoresController.listarProveedores);
 
+
+/**
+ * @route   PUT /api/v1/proveedores/:id
+ * @desc    Actualizar un proveedor
+ * @access  ADMIN
+ */
+router.put(
+  "/proveedores/:id",
+  requireRole("ADMIN"),
+  proveedoresController.actualizarProveedor
+);
+
+
 export default router;
+
+

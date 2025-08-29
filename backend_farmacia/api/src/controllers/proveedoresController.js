@@ -44,3 +44,31 @@ export async function listarProveedores(req, res) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
+import Proveedor from "../models/Proveedor.js";
+
+/**
+ * Actualizar un proveedor por ID
+ */
+export const actualizarProveedor = async (req, res) => {
+  const { id } = req.params;
+  const { nombre, telefono, email, direccion } = req.body;
+
+  try {
+    const proveedor = await Proveedor.findById(id);
+    if (!proveedor) return res.status(404).json({ message: "Proveedor no encontrado" });
+
+    proveedor.nombre = nombre?.trim() || proveedor.nombre;
+    proveedor.telefono = telefono || proveedor.telefono;
+    proveedor.email = email || proveedor.email;
+    proveedor.direccion = direccion || proveedor.direccion;
+
+    await proveedor.save();
+
+    res.json(proveedor);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al actualizar proveedor" });
+  }
+};
+

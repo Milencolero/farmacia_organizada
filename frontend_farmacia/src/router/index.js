@@ -12,7 +12,7 @@ import Inventario from '../views/Inventario.vue';
 import ReportesHistorial from '../views/ReportesHistorial.vue';
 import MovimientosHistorial from '@/views/MovimientosHistorial.vue';
 import ProveedoresGestion from '@/views/ProveedoresGestion.vue';
-
+import UsuariosGestion from '../views/UsuariosGestion.vue';
 // =======================
 // Definición de rutas
 // =======================
@@ -42,6 +42,13 @@ const routes = [
     name: 'GestionProveedores',
     component: ProveedoresGestion,
     meta: { requiresAuth: true, roles: ['ADMIN'] }
+  },
+
+  {
+    path: '/usuarios',
+    name: 'GestionUsuarios',
+    component: UsuariosGestion,
+    meta: { requiresAuth: true, roles: ['ADMIN'] } // solo admins
   }
 ];
 

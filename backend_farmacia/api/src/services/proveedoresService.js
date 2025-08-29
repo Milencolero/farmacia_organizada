@@ -34,3 +34,25 @@ export async function crearProveedor(data) {
 export async function listarProveedores() {
   return Proveedor.find().sort({ nombre: 1 }); // Orden alfabético por nombre
 }
+
+/**
+ * Actualizar un proveedor por ID
+ * @param {string} id - ID del proveedor a actualizar
+ * @param {Object} data - { nombre, telefono, email, direccion }
+ * @returns {Promise<Proveedor>}
+ * @throws {Error} Si no se encuentra el proveedor
+ */
+export async function actualizarProveedor(id, data) {
+  const proveedor = await Proveedor.findById(id);
+  if (!proveedor) {
+    throw new Error("Proveedor no encontrado");
+  }
+
+  // Actualizar campos permitidos
+  proveedor.nombre = data.nombre?.trim() || proveedor.nombre;
+  proveedor.telefono = data.telefono || proveedor.telefono;
+  proveedor.email = data.email || proveedor.email;
+  proveedor.direccion = data.direccion || proveedor.direccion;
+
+  return proveedor.save();
+}

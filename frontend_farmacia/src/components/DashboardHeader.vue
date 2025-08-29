@@ -38,6 +38,12 @@
         <Contact class="nav-icon" />
         <span>Proveedores</span>
       </router-link>
+
+     <router-link v-if="userRole === 'ADMIN'" to="/usuarios" class="nav-link">
+  <User class="nav-icon" />
+  <span>Usuarios</span>
+</router-link>
+ 
     </nav>
 
     <router-view />
@@ -48,11 +54,11 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import { Shield, LogOut, Box as InventoryIcon, FileText as HistoryIcon, ArrowLeftRight, Contact } from 'lucide-vue-next';
+import { Shield, LogOut, Box as InventoryIcon, FileText as HistoryIcon, ArrowLeftRight, Contact, User } from 'lucide-vue-next';
 
 export default {
   name: 'DashboardHeader',
-  components: { Shield, LogOut, InventoryIcon, HistoryIcon, ArrowLeftRight, Contact },
+  components: { Shield, LogOut, InventoryIcon, HistoryIcon, ArrowLeftRight, Contact, User },
   setup() {
     const router = useRouter();
     const authStore = useAuthStore();
