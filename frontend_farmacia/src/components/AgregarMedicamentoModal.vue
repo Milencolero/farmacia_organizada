@@ -1,15 +1,19 @@
 <template>
   <div v-if="show" class="modal-overlay">
     <div class="modal-card">
-      <!-- Header -->
+      <!-- Header del modal -->
       <div class="modal-header">
         <h2>Agregar Nuevo Medicamento</h2>
         <button class="modal-close" @click="$emit('close')">&times;</button>
       </div>
 
-      <!-- Formulario -->
+      <!-- Mensajes de feedback visibles dentro del modal -->
+      <div v-if="mensajeExito" class="alert success">{{ mensajeExito }}</div>
+      <div v-if="mensajeError" class="alert error">{{ mensajeError }}</div>
+
+      <!-- Formulario principal -->
       <form @submit.prevent="agregarMedicamento" class="modal-form">
-        <!-- Datos generales -->
+        <!-- Datos generales del medicamento -->
         <div class="modal-form-grid">
           <div class="form-group">
             <label>Nombre del Medicamento</label>
@@ -32,14 +36,11 @@
           </div>
         </div>
 
-        <!-- Lotes -->
+        <!-- Sección de lotes -->
         <div class="mt-4">
           <h3 class="text-lg font-medium mb-2">Lotes</h3>
-          <div
-            v-for="(lote, index) in form.lotes"
-            :key="index"
-            class="lote-card"
-          >
+
+          <div v-for="(lote, index) in form.lotes" :key="index" class="lote-card">
             <div class="modal-form-grid">
               <div class="form-group">
                 <label>Número de Lote</label>
@@ -83,6 +84,7 @@
               </div>
             </div>
 
+            <!-- Botón para remover lote -->
             <div class="flex justify-end">
               <button
                 type="button"
@@ -95,6 +97,7 @@
             </div>
           </div>
 
+          <!-- Botón para agregar un nuevo lote -->
           <button
             type="button"
             @click="agregarLote"
@@ -104,16 +107,12 @@
           </button>
         </div>
 
-        <!-- Footer -->
+        <!-- Footer con botones -->
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" @click="$emit('close')">
             Cancelar
           </button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            :disabled="!formValido"
-          >
+          <button type="submit" class="btn btn-primary">
             Guardar
           </button>
         </div>
@@ -123,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps({
   show: Boolean,
@@ -132,7 +131,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'added']);
 
-// Formulario reactivo
+// Formulario reactivo con datos iniciales
 const form = ref({
   nombre: '',
   proveedorId: '',
@@ -141,34 +140,90 @@ const form = ref({
   ],
 });
 
-// Funciones para agregar/remover lotes
+// Mensajes de feedback visibles dentro del modal
+const mensajeExito = ref('');
+const mensajeError = ref('');
+
+// Función para agregar un lote vacío
 const agregarLote = () =>
   form.value.lotes.push({ lote: '', cantidad: 1, fechaIngreso: '', fechaVencimiento: '' });
+
+// Función para remover un lote por índice
 const removerLote = (index) => form.value.lotes.splice(index, 1);
 
-// Validaciones
-const formValido = computed(() => {
-  if (!form.value.nombre || !form.value.proveedorId) return false;
-  return form.value.lotes.every(
-    (l) =>
-      l.lote &&
-      l.cantidad > 0 &&
-      l.fechaIngreso &&
-      l.fechaVencimiento &&
-      new Date(l.fechaVencimiento) >= new Date(l.fechaIngreso)
-  );
-});
+// Validación completa del formulario
+const validarFormulario = () => {
+  if (!form.value.nombre || !form.value.proveedorId) {
+    mensajeError.value = 'Completa todos los campos generales';
+    return false;
+  }
 
-// Enviar datos al padre
+  // Validación por lote
+  for (let i = 0; i < form.value.lotes.length; i++) {
+    const lote = form.value.lotes[i];
+    if (!lote.lote || !lote.cantidad || !lote.fechaIngreso || !lote.fechaVencimiento) {
+      mensajeError.value = `Completa todos los campos del lote #${i + 1}`;
+      return false;
+    }
+    if (new Date(lote.fechaVencimiento) <= new Date(lote.fechaIngreso)) {
+      mensajeError.value = `El lote #${i + 1} tiene fecha de vencimiento menor que fecha de ingreso`;
+      return false;
+    }
+  }
+
+  // Si todo está correcto, limpiar mensaje de error
+  mensajeError.value = '';
+  return true;
+};
+
+// Función para enviar datos al padre y mostrar mensaje de éxito en el modal
 const agregarMedicamento = () => {
-  if (!formValido.value) return;
-  emit('added', { ...form.value });
-  emit('close');
-  // Reset del formulario
-  form.value = {
-    nombre: '',
-    proveedorId: '',
-    lotes: [{ lote: '', cantidad: 1, fechaIngreso: '', fechaVencimiento: '' }]
-  };
+  if (!validarFormulario()) {
+    setTimeout(() => (mensajeError.value = ''), 3000); // Limpiar mensaje de error después de 3s
+    return;
+  }
+
+  try {
+    // Emitir evento con los datos del formulario
+    emit('added', { ...form.value });
+
+    // Mostrar mensaje de éxito dentro del modal
+    mensajeExito.value = 'Medicamento agregado correctamente';
+
+    // Resetear formulario para permitir agregar otro medicamento
+    form.value = {
+      nombre: '',
+      proveedorId: '',
+      lotes: [{ lote: '', cantidad: 1, fechaIngreso: '', fechaVencimiento: '' }]
+    };
+
+    // Limpiar mensaje de éxito después de 3 segundos
+    setTimeout(() => (mensajeExito.value = ''), 3000);
+
+    // NOTA: No se cierra el modal automáticamente, para que el usuario vea el mensaje
+
+  } catch (e) {
+    console.error(e);
+    mensajeError.value = 'Error al guardar el medicamento';
+    setTimeout(() => (mensajeError.value = ''), 3000);
+  }
 };
 </script>
+
+<style scoped>
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+</style>

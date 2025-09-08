@@ -1,4 +1,4 @@
-// src/services/movimientosService.js
+
 // ================================================================
 // Servicio para la gestión de movimientos de inventario.
 // ================================================================
@@ -14,3 +14,5 @@ export async function listarMovimientosAPI() {
   const res = await api.get('/movimientos');
   return res.data.items;
 }
+
+

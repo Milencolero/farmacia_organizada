@@ -65,7 +65,7 @@ const MedicamentoSchema = new mongoose.Schema({
   },
   umbralBajoStock: { 
     type: Number, 
-    default: 10, 
+    default: 100, 
     min: [0, "El umbral de stock bajo no puede ser negativo"] 
   },
   activo: { 

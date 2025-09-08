@@ -80,12 +80,28 @@ export async function agregarLote(id, { lote, cantidad, fechaIngreso, fechaVenci
  * @param {string} id - ID del medicamento
  * @returns {Promise<object>} Mensaje de confirmación
  */
-export async function eliminar(id) {
+export async function eliminar(id, usuarioId) {
   const med = await Medicamento.findById(id);
   if (!med) throw new Error("Medicamento no encontrado");
-  await med.deleteOne();
-  return { message: "Medicamento eliminado" };
+
+  med.activo = false;
+  await med.save();
+
+  // Registrar movimiento de egreso
+  await Movimiento.create({
+    tipo: "Egreso",
+    medicamentoId: med._id,
+    cantidad: med.stockTotal,
+    usuarioId,
+    fechaMovimiento: new Date(),
+    lote: "Eliminación"
+  });
+
+  return { message: "Medicamento marcado como eliminado y registrado" };
 }
+
+
+
 
 /**
  * Lista todos los medicamentos
@@ -122,9 +138,84 @@ export async function porVencer(dias = 30) {
  * @returns {Promise<Document>} Medicamento actualizado
  * @throws {Error} Si el medicamento no existe
  */
-export async function actualizar(id, data) {
-  const med = await Medicamento.findByIdAndUpdate(id, data, { new: true });
+
+export async function actualizar(id, data, usuarioId) {
+  const med = await Medicamento.findById(id);
   if (!med) throw new Error("Medicamento no encontrado");
+
+  // Actualizar campos generales
+  med.nombre = data.nombre ?? med.nombre;
+  med.proveedorId = data.proveedorId ?? med.proveedorId;
+  med.umbralBajoStock = data.umbralBajoStock ?? med.umbralBajoStock;
+
+  const lotesActuales = [...med.lotes]; // Copia de los lotes antes de actualizar
+
+  // Procesar lotes enviados
+  if (data.lotes && Array.isArray(data.lotes)) {
+    for (const loteNuevo of data.lotes) {
+      const existente = med.lotes.find(l => l.lote === loteNuevo.lote);
+
+      if (existente) {
+        // Comparar cantidad para registrar movimiento
+        const diferencia = (loteNuevo.cantidad ?? existente.cantidad) - existente.cantidad;
+        if (diferencia !== 0) {
+          await Movimiento.create({
+            tipo: diferencia > 0 ? "INGRESO" : "EGRESO",
+            medicamentoId: med._id,
+            cantidad: Math.abs(diferencia),
+            usuarioId,
+            fechaMovimiento: new Date(),
+            lote: loteNuevo.lote
+          });
+        }
+
+        // Actualizar datos del lote
+        existente.cantidad = loteNuevo.cantidad ?? existente.cantidad;
+        existente.fechaIngreso = loteNuevo.fechaIngreso ? new Date(loteNuevo.fechaIngreso) : existente.fechaIngreso;
+        existente.fechaVencimiento = loteNuevo.fechaVencimiento ? new Date(loteNuevo.fechaVencimiento) : existente.fechaVencimiento;
+      } else {
+        // Lote nuevo: agregar y registrar ingreso
+        med.lotes.push({
+          lote: loteNuevo.lote,
+          cantidad: loteNuevo.cantidad,
+          fechaIngreso: new Date(loteNuevo.fechaIngreso),
+          fechaVencimiento: new Date(loteNuevo.fechaVencimiento)
+        });
+
+        await Movimiento.create({
+          tipo: "INGRESO",
+          medicamentoId: med._id,
+          cantidad: loteNuevo.cantidad,
+          usuarioId,
+          fechaMovimiento: new Date(),
+          lote: loteNuevo.lote
+        });
+      }
+    }
+  }
+
+  // Detectar lotes eliminados
+  const lotesEliminados = lotesActuales.filter(
+    l => !med.lotes.some(nuevo => nuevo.lote === l.lote)
+  );
+
+  for (const eliminado of lotesEliminados) {
+    if (eliminado.cantidad > 0) {
+      await Movimiento.create({
+        tipo: "EGRESO",
+        medicamentoId: med._id,
+        cantidad: eliminado.cantidad,
+        usuarioId,
+        fechaMovimiento: new Date(),
+        lote: eliminado.lote
+      });
+    }
+  }
+
+  // Recalcular stockTotal
+  med.stockTotal = med.lotes.reduce((s, l) => s + l.cantidad, 0);
+
+  await med.save();
 
   return Medicamento.findById(med._id).populate("proveedorId", "nombre");
 }

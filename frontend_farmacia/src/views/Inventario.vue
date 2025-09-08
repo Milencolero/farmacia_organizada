@@ -136,23 +136,24 @@ const filteredMedications = computed(() => {
 });
 
 //Actualiza un medicamento en la lista local tras ser editado. 
+/**
+ * Actualiza un medicamento en la lista local tras ser editado.
+ * Asegura reactividad profunda en Vue 3.
+ * @param {Object} updatedMed - Medicamento actualizado desde el modal
+ */
 const actualizarMedicamentoEnLista = (updatedMed) => {
   if (!updatedMed?._id) return;
-  const index = medications.value.findIndex((m) => m._id === updatedMed._id);
-  if (index !== -1) medications.value[index] = updatedMed;
-};
 
-//Agrega un medicamento al sistema y recarga la lista.
-const agregarMedicamento = async (data) => {
-  try {
-    if (!data) throw new Error("Datos inválidos para crear medicamento.");
-    await crearMedicamento(data);
-    await cargarMedicamentos();
-  } catch (err) {
-    console.error(err);
-    alert("Error al agregar medicamento.");
+  const index = medications.value.findIndex((m) => m._id === updatedMed._id);
+  if (index !== -1) {
+    // Clonamos el objeto actualizado para forzar reactividad
+    medications.value[index] = { ...updatedMed };
+
+    // Opcional: forzar que Vue detecte cambios en todo el array
+    medications.value = [...medications.value];
   }
 };
+
 
 // ===== Montaje inicial =====
 onMounted(() => {

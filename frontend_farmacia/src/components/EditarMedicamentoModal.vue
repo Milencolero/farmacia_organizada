@@ -10,11 +10,13 @@
       <!-- Formulario -->
       <form @submit.prevent="guardar" class="modal-form">
         <div class="modal-form-grid">
+          <!-- Nombre del medicamento -->
           <div class="form-group">
             <label>Nombre</label>
             <input v-model.trim="nombre" type="text" required placeholder="Nombre del medicamento"/>
           </div>
 
+          <!-- Proveedor -->
           <div class="form-group">
             <label>Proveedor</label>
             <select v-model="proveedorId" required>
@@ -25,22 +27,29 @@
             </select>
           </div>
 
-          <div class="form-group">
+          <!-- Sección de lotes -->
+          <div class="form-group" v-for="(l, index) in lotes" :key="l.id">
             <label>Lote</label>
-            <input v-model.trim="lote" type="text" required placeholder="Número de lote"/>
-          </div>
+            <input v-model="l.lote" type="text" required placeholder="Número de lote" />
 
-          <div class="form-group">
-            <label>Stock Total</label>
-            <input v-model.number="stockTotal" type="number" min="1" required />
-          </div>
+            <label>Cantidad</label>
+            <input v-model.number="l.cantidad" type="number" min="1" required />
 
-          <div class="form-group">
             <label>Vencimiento</label>
-            <input v-model="vencimiento" type="date" :min="fechaMinima" required />
+            <input v-model="l.vencimiento" type="date" :min="fechaMinima" required />
+
+            <button type="button" class="btn btn-outline btn-sm mt-1" @click="eliminarLote(index)">
+              Eliminar lote
+            </button>
           </div>
+
+          <!-- Botón para agregar lote -->
+          <button type="button" class="btn btn-secondary mt-2" @click="agregarLote">
+            + Agregar lote
+          </button>
         </div>
 
+        <!-- Mensaje de error -->
         <p v-if="error" class="error-text">{{ error }}</p>
 
         <!-- Footer -->
@@ -60,84 +69,105 @@ import { ref, watch, onMounted, computed } from "vue";
 import { listarProveedores } from "@/services/proveedoresService";
 import { actualizarMedicamento } from "@/services/inventarioService";
 
+// Props del componente
 const props = defineProps({
   show: Boolean,
   medicamento: Object
 });
 
+// Eventos emitidos al padre
 const emit = defineEmits(['close', 'updated']);
 
+// Estados reactivos
 const nombre = ref('');
-const stockTotal = ref(0);
 const proveedorId = ref('');
-const lote = ref('');
-const vencimiento = ref('');
+const lotes = ref([]);
 const proveedores = ref([]);
 const loading = ref(false);
 const error = ref('');
 
-// Cargar proveedores al montar
+// Cargar proveedores al montar el componente
 onMounted(async () => {
-  try { proveedores.value = await listarProveedores(); } 
-  catch (e) { console.error(e); }
+  try {
+    proveedores.value = await listarProveedores();
+  } catch (e) {
+    console.error("Error al cargar proveedores:", e);
+  }
 });
 
-// Sincronizar formulario con medicamento
+// Sincronizar formulario con medicamento seleccionado
 watch(() => props.medicamento, (med) => {
   if (med) {
     nombre.value = med.nombre || '';
-    stockTotal.value = med.stockTotal || 0;
     proveedorId.value = med.proveedorId?._id || '';
-    lote.value = med.lotes?.[0]?.lote || '';
-    vencimiento.value = med.lotes?.[0]?.fechaVencimiento?.substr(0,10) || '';
+    lotes.value = (med.lotes || []).map(l => ({
+      id: l.lote + Math.random(), // clave temporal para Vue
+      lote: l.lote,
+      cantidad: l.cantidad,
+      vencimiento: l.fechaVencimiento?.substr(0,10)
+    }));
   }
 }, { immediate: true });
 
-// Validaciones
+// Validación de formulario
 const formValido = computed(() => {
-  return nombre.value && proveedorId.value && lote.value && stockTotal.value > 0 && vencimiento.value;
+  if (!nombre.value || !proveedorId.value || !lotes.value.length) return false;
+  return lotes.value.every(l => l.lote && l.cantidad > 0 && l.vencimiento);
 });
 
-// Fecha mínima de vencimiento (puede ser hoy)
-const fechaMinima = computed(() => {
-  const hoy = new Date();
-  return hoy.toISOString().split('T')[0];
-});
+// Fecha mínima para vencimiento
+const fechaMinima = computed(() => new Date().toISOString().split('T')[0]);
 
-// Funciones
+// Función para cerrar modal
 const cerrar = () => {
   emit('close');
   error.value = '';
 };
 
+// Función para agregar un lote
+const agregarLote = () => {
+  lotes.value.push({
+    id: Math.random(),
+    lote: '',
+    cantidad: 1,
+    vencimiento: fechaMinima.value
+  });
+};
+
+// Función para eliminar un lote
+const eliminarLote = (index) => {
+  lotes.value.splice(index, 1);
+};
+
+// Función para guardar cambios
 const guardar = async () => {
   if (!formValido.value || !props.medicamento) return;
   loading.value = true;
   try {
-    const medActualizado = { 
-      ...props.medicamento, 
+    // Preparar lotes actualizados
+    const lotesActualizados = lotes.value.map(l => ({
+      lote: l.lote,
+      cantidad: Number(l.cantidad),
+      fechaVencimiento: l.vencimiento,
+      fechaIngreso: new Date().toISOString()
+    }));
+
+    // Calcular stock total
+    const stockTotal = lotesActualizados.reduce((sum, l) => sum + l.cantidad, 0);
+
+    // Preparar objeto de medicamento actualizado
+    const medActualizado = {
+      ...props.medicamento,
       nombre: nombre.value,
-      proveedorId: proveedorId.value, 
-      stockTotal: stockTotal.value 
+      proveedorId: proveedorId.value,
+      lotes: lotesActualizados,
+      stockTotal
     };
 
-    // Actualizar lote
-    const lotesCopia = [...(medActualizado.lotes || [])];
-    const loteIndex = lotesCopia.findIndex(l => l.lote === lote.value);
-    if (loteIndex !== -1) {
-      lotesCopia[loteIndex].cantidad = stockTotal.value;
-      lotesCopia[loteIndex].fechaVencimiento = vencimiento.value;
-    } else {
-      lotesCopia.push({
-        lote: lote.value,
-        cantidad: stockTotal.value,
-        fechaIngreso: new Date().toISOString(),
-        fechaVencimiento: vencimiento.value
-      });
-    }
-    medActualizado.lotes = lotesCopia;
-
+    // Actualizar en backend
     const updated = await actualizarMedicamento(props.medicamento._id, medActualizado);
+
+    // Emitir evento al padre con el medicamento actualizado
     emit('updated', updated);
     cerrar();
   } catch (err) {
@@ -149,11 +179,6 @@ const guardar = async () => {
 </script>
 
 <style scoped>
-
-/* Estilo específico para mensajes de error dentro del modal */
-.error-text {
-  color: var(--destructive);
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-}
+.error-text { color: var(--destructive); font-size: 0.85rem; margin-top: 0.25rem; }
+.modal-form-grid { display: grid; gap: 1rem; }
 </style>

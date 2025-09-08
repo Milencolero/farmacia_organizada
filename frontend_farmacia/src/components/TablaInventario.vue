@@ -26,12 +26,12 @@
             <td>{{ med.proveedorId?.nombre || '-' }}</td>
             <td>{{ med.stockTotal ?? '-' }}</td>
             <td>
-              <span
-                class="status-badge"
-                :class="med.stockTotal > med.umbralBajoStock ? 'bg-green-100' : 'bg-red-100'"
-              >
-                {{ med.stockTotal > med.umbralBajoStock ? 'En Stock' : 'Stock Bajo' }}
-              </span>
+                <span
+    class="status-badge"
+    :class="Number(med.stockTotal) <= Number(med.umbralBajoStock) ? 'bg-red-100' : 'bg-green-100'"
+  >
+    {{ Number(med.stockTotal) <= Number(med.umbralBajoStock) ? 'Stock Bajo' : 'En Stock' }}
+  </span>
             </td>
             <td>
               <ul v-if="med.lotes?.length">

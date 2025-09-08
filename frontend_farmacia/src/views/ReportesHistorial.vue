@@ -13,6 +13,9 @@
         v-model:filter-date="filterDate"
         class="filters-container"
       />
+<!-- Mensajes de éxito y error -->
+<div v-if="mensajeExito" class="alert success">{{ mensajeExito }}</div>
+<div v-if="mensajeError" class="alert error">{{ mensajeError }}</div>
 
       <!-- Mensajes de estado -->
       <div v-if="loading" class="status-message">Cargando solicitudes...</div>
@@ -51,6 +54,9 @@ const searchTerm = ref('');
 const filterState = ref('Todos los Estados');
 const filterDate = ref('Todas las fechas');
 
+const mensajeExito = ref('');
+const mensajeError = ref('');
+
 // ===== Cargar solicitudes desde API =====
 const cargarSolicitudes = async () => {
   loading.value = true;
@@ -81,15 +87,32 @@ const cargarSolicitudes = async () => {
 // ===== Manejo de acciones sobre solicitudes =====
 const handleAccionSolicitud = async (id, accion) => {
   try {
+
+// Confirmación previa para rechazar
+    if (accion === 'RECHAZADA') {
+      const confirmar = window.confirm('¿Está seguro que quiere rechazar esta solicitud?');
+      if (!confirmar) return;
+    }
+
+
     if (accion === 'ENTREGAR') {
       await entregarSolicitud(id);
+      mensajeExito.value = 'Solicitud entregada correctamente ';
+
     } else {
       await actualizarEstadoSolicitud(id, accion);
+            mensajeExito.value = `Solicitud ${accion.toLowerCase()} correctamente`;
     }
+
+       // Ocultar mensaje después de 3 segundos
+    setTimeout(() => (mensajeExito.value = ''), 3000);
+
     // Recargar listado después de la acción
     await cargarSolicitudes();
   } catch (e) {
     console.error(`Error al ${accion.toLowerCase()} solicitud:`, e);
+    mensajeError.value = 'Ocurrió un error. Intente de nuevo ';
+    setTimeout(() => (mensajeError.value = ''), 3000);
   }
 };
 
@@ -166,5 +189,20 @@ onMounted(cargarSolicitudes);
   flex: 1;
   min-height: 200px; /* evita colapso de contenedor */
   overflow-y: auto;
+}
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+.error {
+  background: #fee2e2;
+  color: #991b1b;
 }
 </style>

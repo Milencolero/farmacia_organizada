@@ -64,6 +64,9 @@
         v-model="observaciones"
         class="input w-full mb-4"
       ></textarea>
+      <span v-if="errores.observaciones" class="text-destructive text-sm">
+  {{ errores.observaciones }}
+</span>
 
       <!-- Footer -->
       <div class="modal-footer">
@@ -72,6 +75,8 @@
           {{ loading ? 'Enviando...' : 'Enviar' }}
         </button>
       </div>
+      <p v-if="mensajeExito" class="text-correct mb-2">{{ mensajeExito }}</p>
+
     </div>
   </div>
 </template>
@@ -92,6 +97,8 @@ const searchTerm = ref('');
 const seleccionados = reactive<ItemSeleccionado[]>([]);
 const observaciones = ref('');
 const errores = reactive<{ [key: string]: string }>({});
+const mensajeExito = ref('');
+
 
 /** Cargar medicamentos desde servicio */
 const cargarMedicamentos = async () => {
@@ -145,12 +152,15 @@ const disminuirCantidad = (item: ItemSeleccionado) => ajustarCantidad(item, -1);
 const validar = () => {
   let valido = true;
   errores.items = '';
+  errores.observaciones = '';
 
+  // Validar medicamentos seleccionados
   if (seleccionados.length === 0) {
     errores.items = 'Debe seleccionar al menos un medicamento';
     valido = false;
   }
 
+  // Validar propósito de cada medicamento
   seleccionados.forEach((item, idx) => {
     const key = `proposito_${idx}`;
     if (!item.proposito.trim()) {
@@ -161,12 +171,23 @@ const validar = () => {
     }
   });
 
+  // Validar observaciones (mínimo 5 caracteres)
+  if (!observaciones.value.trim() || observaciones.value.length < 5) {
+    errores.observaciones = 'Debe ingresar observaciones (mínimo 5 caracteres)';
+    valido = false;
+  } else {
+    errores.observaciones = '';
+  }
+
   return valido;
 };
+
 
 /** Envía la solicitud */
 const enviarSolicitud = async () => {
   if (!validar()) return;
+
+
 
   loading.value = true;
   try {
@@ -174,7 +195,11 @@ const enviarSolicitud = async () => {
       items: seleccionados.map(s => ({ medicamentoId: s.medicamentoId, cantidad: s.cantidad, proposito: s.proposito })),
       observaciones: observaciones.value
     });
+    mensajeExito.value = 'Solicitud enviada correctamente';
+setTimeout(() => {
+  mensajeExito.value = '';
     cerrarModal();
+    }, 2000);
   } catch (e) {
     console.error('Error al enviar solicitud:', e);
     alert('No se pudo enviar la solicitud.');
@@ -208,4 +233,5 @@ watch(() => props.show, val => { if (val) cargarMedicamentos(); });
 .seleccionados { display: flex; flex-direction: column; gap: 0.5rem; }
 .seleccionado-item { border: 1px solid var(--border); padding: 0.5rem; border-radius: var(--radius); }
 .text-destructive { color: #dc2626; }
+.text-correct { color: #50ab0aff; }
 </style>
