@@ -173,7 +173,7 @@ const guardar = async () => {
     if (!usuarioId) throw new Error("No hay usuario logeado");
 
     // Actualizar en backend
-    const updated = await actualizarMedicamento(props.medicamento._id, {medActualizado, usuarioId});
+const updated = await actualizarMedicamento(props.medicamento._id, { ...medActualizado, usuarioId });
 
     // Emitir evento al padre con el medicamento actualizado
     emit('updated', updated);
