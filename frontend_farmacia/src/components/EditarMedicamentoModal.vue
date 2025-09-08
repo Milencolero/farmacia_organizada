@@ -68,12 +68,16 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { listarProveedores } from "@/services/proveedoresService";
 import { actualizarMedicamento } from "@/services/inventarioService";
+import { useAuthStore } from "@/stores/auth";
 
 // Props del componente
 const props = defineProps({
   show: Boolean,
   medicamento: Object
 });
+
+
+const authStore = useAuthStore(); // acceder al store
 
 // Eventos emitidos al padre
 const emit = defineEmits(['close', 'updated']);
@@ -164,8 +168,12 @@ const guardar = async () => {
       stockTotal
     };
 
+   // Obtener el usuarioId desde el store
+    const usuarioId = authStore.user?._id;
+    if (!usuarioId) throw new Error("No hay usuario logeado");
+
     // Actualizar en backend
-    const updated = await actualizarMedicamento(props.medicamento._id, medActualizado);
+    const updated = await actualizarMedicamento(props.medicamento._id, {medActualizado, usuarioId});
 
     // Emitir evento al padre con el medicamento actualizado
     emit('updated', updated);
@@ -181,4 +189,4 @@ const guardar = async () => {
 <style scoped>
 .error-text { color: var(--destructive); font-size: 0.85rem; margin-top: 0.25rem; }
 .modal-form-grid { display: grid; gap: 1rem; }
-</style>
+</style> 
