@@ -113,6 +113,7 @@ const cargarMedicamentos = async () => {
 };
 
 
+
 //Filtra medicamentos según nombre, proveedor o lote.
 const filteredMedications = computed(() => {
   const term = searchTerm.value.toLowerCase().trim();
@@ -134,6 +135,24 @@ const filteredMedications = computed(() => {
     );
   });
 });
+
+
+// agregarMedicamento
+const agregarMedicamento = async (nuevoMed) => {
+  try {
+    // Llamada al backend para crear medicamento
+    const creado = await crearMedicamento(nuevoMed);
+
+    // Lo agregamos a la lista local para actualizar la tabla
+    medications.value.push(creado);
+
+    // Cerrar modal
+    cerrarModal("agregar");
+  } catch (err) {
+    console.error(err);
+    alert("Error al agregar medicamento.");
+  }
+};
 
 //Actualiza un medicamento en la lista local tras ser editado. 
 /**
