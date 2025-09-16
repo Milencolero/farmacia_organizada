@@ -42,7 +42,8 @@ const MovimientoSchema = new mongoose.Schema({
   usuarioId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: "User", 
-    required: [true, "El usuario responsable es obligatorio"] 
+    required: false,   // 🔹 Cambiado a opcional
+    default: null      // 🔹 Se guarda null si no viene
   },
   observaciones: { 
     type: String, 

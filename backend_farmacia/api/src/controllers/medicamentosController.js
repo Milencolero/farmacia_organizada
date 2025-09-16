@@ -124,7 +124,10 @@ export async function actualizarMedicamento(req, res) {
       return res.status(400).json({ error: "Datos a actualizar son obligatorios" });
     }
 
-    const updatedMed = await service.actualizar(id, req.body);
+     const usuarioId = req.user?.id || req.user?._id;// 🔹 OJO, esto faltaba
+    if (!usuarioId) return res.status(401).json({ error: "Usuario no autenticado" });
+
+    const updatedMed = await service.actualizar(id, req.body, usuarioId); // 🔹 Pasar usuarioId al servicio
     res.json(updatedMed);
 
   } catch (err) {

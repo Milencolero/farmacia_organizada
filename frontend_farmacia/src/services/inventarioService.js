@@ -75,3 +75,4 @@ export async function actualizarMedicamento(medId, data) {
   const res = await api.put(`/medicamentos/${medId}`, data);
   return res.data;
 }
+

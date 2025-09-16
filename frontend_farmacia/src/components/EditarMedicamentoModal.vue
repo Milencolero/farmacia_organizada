@@ -68,16 +68,14 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { listarProveedores } from "@/services/proveedoresService";
 import { actualizarMedicamento } from "@/services/inventarioService";
-import { useAuthStore } from "@/stores/auth";
-
+import { getCurrentUser } from "@/utils/auth";
+ 
 // Props del componente
 const props = defineProps({
   show: Boolean,
-  medicamento: Object
+  medicamento: Object,
+  usuarioId: String  // ahora viene desde el padre
 });
-
-
-const authStore = useAuthStore(); // acceder al store
 
 // Eventos emitidos al padre
 const emit = defineEmits(['close', 'updated']);
@@ -105,7 +103,7 @@ watch(() => props.medicamento, (med) => {
     nombre.value = med.nombre || '';
     proveedorId.value = med.proveedorId?._id || '';
     lotes.value = (med.lotes || []).map(l => ({
-      id: l.lote + Math.random(), // clave temporal para Vue
+      id: l.lote + Math.random(),
       lote: l.lote,
       cantidad: l.cantidad,
       vencimiento: l.fechaVencimiento?.substr(0,10)
@@ -140,53 +138,67 @@ const agregarLote = () => {
 
 // Función para eliminar un lote
 const eliminarLote = (index) => {
-  lotes.value.splice(index, 1);
+  const lote = lotes.value[index];
+  if (lote) {
+    lote.operacion = "ELIMINAR";   // marcar en lugar de eliminarlo del array
+  }
 };
+
 
 // Función para guardar cambios
 const guardar = async () => {
   if (!formValido.value || !props.medicamento) return;
   loading.value = true;
+
   try {
-    // Preparar lotes actualizados
-    const lotesActualizados = lotes.value.map(l => ({
-      lote: l.lote,
-      cantidad: Number(l.cantidad),
-      fechaVencimiento: l.vencimiento,
-      fechaIngreso: new Date().toISOString()
-    }));
+    const usuario = getCurrentUser();
+    console.log("Usuario obtenido:", usuario); // Verifica si usuario y usuario.id son correctos
+    if (!usuario?.id) {
+      error.value = "No se pudo identificar al usuario logeado. Intente recargar la página.";
+      loading.value = false;
+      return;
+    }
 
-    // Calcular stock total
-    const stockTotal = lotesActualizados.reduce((sum, l) => sum + l.cantidad, 0);
+const lotesActualizados = lotes.value.map(l => ({
+  lote: l.lote,
+  cantidad: Number(l.cantidad),
+  fechaIngreso: new Date().toISOString(),
+  fechaVencimiento: new Date(l.vencimiento).toISOString(),
+  operacion: l.operacion || (l.nuevo ? "AGREGAR" : "MODIFICAR")
+}));
 
-    // Preparar objeto de medicamento actualizado
+
     const medActualizado = {
-      ...props.medicamento,
       nombre: nombre.value,
       proveedorId: proveedorId.value,
-      lotes: lotesActualizados,
-      stockTotal
+      umbralBajoStock: props.medicamento.umbralBajoStock,
+      lotes: lotesActualizados
     };
 
-   // Obtener el usuarioId desde el store
-    const usuarioId = authStore.user?._id;
-    if (!usuarioId) throw new Error("No hay usuario logeado");
+    // 🔹 Aquí imprimimos lo que se va a enviar
+    console.log("JSON enviado al backend:", JSON.stringify({ ...medActualizado, usuarioId: usuario.id }, null, 2));
 
-    // Actualizar en backend
-const updated = await actualizarMedicamento(props.medicamento._id, { ...medActualizado, usuarioId });
+    const updated = await actualizarMedicamento(
+      props.medicamento._id,
+      medActualizado
+    );
 
-    // Emitir evento al padre con el medicamento actualizado
     emit('updated', updated);
     cerrar();
+
   } catch (err) {
+    console.error("Error al actualizar medicamento:", err);
+    console.log("Respuesta del backend:", err.response?.data);
     error.value = err.response?.data?.error || err.message || 'Error al actualizar';
   } finally {
     loading.value = false;
   }
 };
+
+
 </script>
 
 <style scoped>
 .error-text { color: var(--destructive); font-size: 0.85rem; margin-top: 0.25rem; }
 .modal-form-grid { display: grid; gap: 1rem; }
-</style> 
+</style>

@@ -38,6 +38,8 @@
     <EditarMedicamentoModal
       :show="modales.editar"
       :medicamento="medEditar"
+        :usuario-id="authStore.user?._id"
+
       @close="cerrarModal('editar')"
       @updated="actualizarMedicamentoEnLista"
     />
@@ -56,6 +58,7 @@ import { ref, computed, onMounted } from "vue";
 import { listarMedicamentos, crearMedicamento } from "@/services/inventarioService";
 import { listarProveedores } from "@/services/proveedoresService";
 import { useAuthStore } from "@/stores/auth";
+import { getCurrentUser } from "@/utils/auth";
 
 import AlertasVencimiento from "@/components/AlertasVencimiento.vue";
 import DashboardHeader from "@/components/DashboardHeader.vue";
@@ -155,11 +158,7 @@ const agregarMedicamento = async (nuevoMed) => {
 };
 
 //Actualiza un medicamento en la lista local tras ser editado. 
-/**
- * Actualiza un medicamento en la lista local tras ser editado.
- * Asegura reactividad profunda en Vue 3.
- * @param {Object} updatedMed - Medicamento actualizado desde el modal
- */
+
 const actualizarMedicamentoEnLista = (updatedMed) => {
   if (!updatedMed?._id) return;
 
