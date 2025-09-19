@@ -167,7 +167,6 @@ const actualizarMedicamentoEnLista = (updatedMed) => {
     // Clonamos el objeto actualizado para forzar reactividad
     medications.value[index] = { ...updatedMed };
 
-    // Opcional: forzar que Vue detecte cambios en todo el array
     medications.value = [...medications.value];
   }
 };

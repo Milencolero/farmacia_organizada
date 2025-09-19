@@ -175,7 +175,6 @@ const lotesActualizados = lotes.value.map(l => ({
       lotes: lotesActualizados
     };
 
-    // 🔹 Aquí imprimimos lo que se va a enviar
     console.log("JSON enviado al backend:", JSON.stringify({ ...medActualizado, usuarioId: usuario.id }, null, 2));
 
     const updated = await actualizarMedicamento(
