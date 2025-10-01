@@ -7,7 +7,7 @@
            <Shield class="icon-shield" />
         </div>
         <h2 class="title">Bodega Farmacia</h2><br>
-        <p class="subtitle">Gestión de Medicamentos CESFAM PICA</p>
+        <p class="subtitle">Gestión de Medicamentos <br>CESFAM PICA</br></p>
       </div>
 
       <!-- Formulario de login -->
@@ -195,3 +195,4 @@ export default {
   background: #020111;
 }
 </style>
+
