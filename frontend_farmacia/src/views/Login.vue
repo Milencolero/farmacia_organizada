@@ -6,8 +6,8 @@
         <div class="icon-wrapper">
            <Shield class="icon-shield" />
         </div>
-        <h2 class="title">Farmacia Organizada</h2>
-        <p class="subtitle">Gestión de Medicamentos CESFAM</p>
+        <h2 class="title">Bodega Farmacia</h2><br>
+        <p class="subtitle">Gestión de Medicamentos CESFAM PICA</p>
       </div>
 
       <!-- Formulario de login -->
